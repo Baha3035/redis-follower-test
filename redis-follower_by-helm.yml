@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-follower
+  labels:
+    helm.sh/chart: guestbook-0.1.0
+    app.kubernetes.io/name: redis-follower
+    app.kubernetes.io/instance: redis-follower
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+    app: redis
+    role: follower
+    tier: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: redis-follower
+      app.kubernetes.io/instance: redis-follower
+      app: redis
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: redis-follower
+        app.kubernetes.io/instance: redis-follower
+        app: redis
+        role: follower
+        tier: backend
+    spec:
+      serviceAccountName: redis-follower
+      securityContext:
+        {}
+      containers:
+        - name: guestbook
+          securityContext:
+            {}
+          image: "us-docker.pkg.dev/google-samples/containers/gke/gb-redis-follower:v2"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 6379
+              name: ""
+              protocol: ""
+          # livenessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-follower
+  labels:
+    helm.sh/chart: guestbook-0.1.0
+    app.kubernetes.io/name: redis-follower
+    app.kubernetes.io/instance: redis-follower
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm\
+    app: redis
+    role: follower
+    tier: backend
+spec:
+  type: ClusterIP
+  ports:
+    - port: 6379
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: redis-follower
+    app.kubernetes.io/instance: redis-follower
+    app: redis
+    role: follower
+    tier: backend
